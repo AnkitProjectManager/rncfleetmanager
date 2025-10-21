@@ -87,6 +87,7 @@ export default function TiresPage() {
 
   // Safely read from localStorage on the client
   useEffect(() => {
+    if (typeof window === "undefined") return
     const adminStr = localStorage.getItem("fleet_admin")
     try {
       const admin = adminStr ? JSON.parse(adminStr) : null
