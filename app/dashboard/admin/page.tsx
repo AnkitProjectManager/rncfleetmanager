@@ -13,6 +13,7 @@ import type { Admin, Company } from "@/lib/fleet-types"
 export default function AdminPage() {
   const [admins, setAdmins] = useState<Admin[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
+  const [admin, setAdmin] = useState<Admin | null>(null)
   const [showAddAdmin, setShowAddAdmin] = useState(false)
   const [showAddCompany, setShowAddCompany] = useState(false)
   const [formData, setFormData] = useState({
@@ -21,13 +22,28 @@ export default function AdminPage() {
     name: "",
     companyId: "",
   })
-  const [companyFormData, setCompanyFormData] = useState({
+  const [companyFormData, setCompanyFormData] = useState<{
+    name: string
+    subscriptionTier: "basic" | "professional" | "enterprise"
+  }>({
     name: "",
-    subscriptionTier: "basic" as const,
+    subscriptionTier: "basic",
   })
 
-  const admin = JSON.parse(localStorage.getItem("fleet_admin") || "{}")
-  const isSuperAdmin = admin.role === "superadmin"
+  // Load current admin safely on the client
+  useEffect(() => {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (adminStr) {
+      try {
+        const parsed = JSON.parse(adminStr)
+        setAdmin(parsed)
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, [])
+
+  const isSuperAdmin = admin?.role === "superadmin"
 
   useEffect(() => {
     setAdmins(fleetStorage.getAdmins())
@@ -80,8 +96,8 @@ export default function AdminPage() {
     setShowAddCompany(false)
   }
 
-  const displayAdmins = isSuperAdmin ? admins : admins.filter((a) => a.companyId === admin.companyId)
-  const displayCompanies = isSuperAdmin ? companies : companies.filter((c) => c.id === admin.companyId)
+  const displayAdmins = isSuperAdmin ? admins : admins.filter((a) => a.companyId === admin?.companyId)
+  const displayCompanies = isSuperAdmin ? companies : companies.filter((c) => c.id === admin?.companyId)
 
   return (
     <div className="space-y-6">

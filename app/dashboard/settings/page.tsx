@@ -73,7 +73,7 @@ export default function SettingsPage() {
   if (!user) return null
 
   return (
-    <main className="flex-1 overflow-auto bg-slate-950">
+    <main className="flex-1 overflow-auto" style={{ background: 'var(--color-background)' }}>
       <div className="p-6 space-y-6">
         <div className="flex items-center gap-4">
           <BackButton />
@@ -100,7 +100,7 @@ export default function SettingsPage() {
           </TabsList>
 
           <TabsContent value="organization" className="space-y-4">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <CardHeader>
                 <CardTitle className="text-white">Organization Settings</CardTitle>
                 <CardDescription className="text-slate-400">Update your organization information</CardDescription>
@@ -114,7 +114,7 @@ export default function SettingsPage() {
                     id="org-name"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white"
+                    className="bg-[var(--color-input)] border border-[var(--color-border)] text-[var(--card-foreground)]"
                   />
                 </div>
                 <div>
@@ -125,7 +125,7 @@ export default function SettingsPage() {
                     id="org-email"
                     value={email}
                     disabled
-                    className="bg-slate-700 border-slate-600 text-slate-400"
+                    className="bg-[var(--color-input)] border border-[var(--color-border)] text-[var(--muted-foreground)]"
                   />
                 </div>
                 <Button onClick={handleSaveOrgSettings} className="bg-blue-600 hover:bg-blue-700">
@@ -136,7 +136,7 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="security" className="space-y-4">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <CardHeader>
                 <CardTitle className="text-white">Security Settings</CardTitle>
                 <CardDescription className="text-slate-400">
@@ -144,12 +144,12 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-slate-700 rounded-lg">
+                <div className="flex items-center justify-between p-4 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
                   <div className="flex items-center gap-3">
                     <Lock className="w-5 h-5 text-blue-400" />
                     <div>
-                      <p className="font-medium text-white">Multi-Factor Authentication</p>
-                      <p className="text-sm text-slate-400">Require MFA for all users</p>
+                      <p className="font-medium text-[var(--card-foreground)]">Multi-Factor Authentication</p>
+                      <p className="text-sm text-[var(--muted-foreground)]">Require MFA for all users</p>
                     </div>
                   </div>
                   <button
@@ -166,12 +166,12 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-slate-700 rounded-lg">
+                <div className="flex items-center justify-between p-4 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
                   <div className="flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-orange-400" />
                     <div>
-                      <p className="font-medium text-white">Single Sign-On (SSO)</p>
-                      <p className="text-sm text-slate-400">Enable SSO for your organization</p>
+                      <p className="font-medium text-[var(--card-foreground)]">Single Sign-On (SSO)</p>
+                      <p className="text-sm text-[var(--muted-foreground)]">Enable SSO for your organization</p>
                     </div>
                   </div>
                   <button
@@ -196,23 +196,23 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="api" className="space-y-4">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <CardHeader>
                 <CardTitle className="text-white">API Keys</CardTitle>
                 <CardDescription className="text-slate-400">Manage API keys for programmatic access</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                  <p className="text-sm text-slate-400 mb-2">Your API Key</p>
+                <div className="p-4 rounded-lg border" style={{ background: 'var(--color-muted)', borderColor: 'var(--color-border)' }}>
+                  <p className="text-sm text-[var(--muted-foreground)] mb-2">Your API Key</p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 text-sm text-slate-300 font-mono break-all">
+                    <code className="flex-1 text-sm text-[var(--muted-foreground)] font-mono break-all">
                       {showApiKey ? apiKey : "••••••••••••••••••••••••••••••••"}
                     </code>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="border-slate-600 text-slate-300"
+                      className="border-[var(--color-border)] text-[var(--muted-foreground)]"
                     >
                       {showApiKey ? "Hide" : "Show"}
                     </Button>
@@ -225,7 +225,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <CardHeader>
                 <CardTitle className="text-white">Webhooks</CardTitle>
                 <CardDescription className="text-slate-400">Configure webhooks for real-time events</CardDescription>
@@ -238,15 +238,12 @@ export default function SettingsPage() {
                     { event: "policy.updated", description: "Policy configuration changed" },
                     { event: "vulnerability.detected", description: "New vulnerability found" },
                   ].map((webhook) => (
-                    <div
-                      key={webhook.event}
-                      className="flex items-center justify-between p-3 border border-slate-700 rounded-lg"
-                    >
+                    <div key={webhook.event} className="flex items-center justify-between p-3 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
                       <div>
-                        <p className="font-medium text-white">{webhook.event}</p>
-                        <p className="text-sm text-slate-400">{webhook.description}</p>
+                        <p className="font-medium text-[var(--card-foreground)]">{webhook.event}</p>
+                        <p className="text-sm text-[var(--muted-foreground)]">{webhook.description}</p>
                       </div>
-                      <Button variant="outline" className="border-slate-600 text-slate-300 bg-transparent">
+                      <Button variant="outline" className="border-[var(--color-border)] text-[var(--muted-foreground)] bg-transparent">
                         Configure
                       </Button>
                     </div>
@@ -257,7 +254,7 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <CardHeader>
                 <CardTitle className="text-white">Notification Preferences</CardTitle>
                 <CardDescription className="text-slate-400">Configure how you receive alerts</CardDescription>
@@ -270,13 +267,10 @@ export default function SettingsPage() {
                   { name: "Device Enrollment", enabled: false },
                   { name: "Weekly Reports", enabled: true },
                 ].map((notif) => (
-                  <div
-                    key={notif.name}
-                    className="flex items-center justify-between p-3 border border-slate-700 rounded-lg"
-                  >
+                  <div key={notif.name} className="flex items-center justify-between p-3 border rounded-lg" style={{ borderColor: 'var(--color-border)' }}>
                     <div className="flex items-center gap-3">
                       <Bell className="w-5 h-5 text-blue-400" />
-                      <p className="text-white">{notif.name}</p>
+                      <p className="text-[var(--card-foreground)]">{notif.name}</p>
                     </div>
                     <button
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${

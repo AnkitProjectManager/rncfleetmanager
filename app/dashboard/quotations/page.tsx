@@ -18,6 +18,7 @@ export default function QuotationsPage() {
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([])
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [companyId, setCompanyId] = useState<string | null>(null)
   const [showNewRequest, setShowNewRequest] = useState(false)
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([])
   const [selectedServices, setSelectedServices] = useState<string[]>([])
@@ -30,10 +31,21 @@ export default function QuotationsPage() {
   const [showPayment, setShowPayment] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null)
 
-  const admin = JSON.parse(localStorage.getItem("fleet_admin") || "{}")
-  const companyId = admin.companyId
+  // Load companyId from localStorage safely on client
+  useEffect(() => {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (adminStr) {
+      try {
+        const admin = JSON.parse(adminStr)
+        if (admin?.companyId) setCompanyId(admin.companyId as string)
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, [])
 
   useEffect(() => {
+    if (!companyId) return
     setServiceRequests(fleetStorage.getServiceRequests(companyId))
     setVehicles(fleetStorage.getVehicles(companyId))
     setServices(fleetStorage.getServices(companyId))
@@ -42,6 +54,8 @@ export default function QuotationsPage() {
   const handleAddCustomService = (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!companyId) return
+
     const newService: Service = {
       id: `service-custom-${Date.now()}`,
       companyId,
@@ -49,8 +63,7 @@ export default function QuotationsPage() {
       description: "Custom service",
       estimatedCost: customService.estimatedCost,
       estimatedDurationDays: customService.estimatedDurationDays,
-      category: "custom",
-      createdAt: new Date().toISOString(),
+      interval: { type: "days", value: Math.max(1, Number(customService.estimatedDurationDays) || 1) },
     }
 
     fleetStorage.addService(newService)
@@ -71,6 +84,8 @@ export default function QuotationsPage() {
     const selectedServicesList = services.filter((s) => selectedServices.includes(s.id))
     const totalCost = selectedServicesList.reduce((sum, s) => sum + s.estimatedCost, 0) * selectedVehicles.length
     const maxDuration = Math.max(...selectedServicesList.map((s) => s.estimatedDurationDays))
+
+    if (!companyId) return
 
     const newRequest: ServiceRequest = {
       id: `request-${Date.now()}`,

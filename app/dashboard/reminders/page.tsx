@@ -11,33 +11,48 @@ export default function RemindersPage() {
   const [reminders, setReminders] = useState<ServiceReminder[]>([])
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
 
-  const admin = JSON.parse(localStorage.getItem("fleet_admin") || "{}")
-  const companyId = admin.companyId
+  const [companyId, setCompanyId] = useState<string | null>(null)
+
+  // Safely read from localStorage on the client to get companyId
+  useEffect(() => {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (adminStr) {
+      try {
+        const admin = JSON.parse(adminStr)
+        if (admin?.companyId) setCompanyId(admin.companyId as string)
+      } catch {
+        // no-op if parse fails
+      }
+    }
+  }, [])
 
   useEffect(() => {
+    if (!companyId) return
     const allReminders = fleetStorage.getServiceReminders(companyId)
+    const allVehicles = fleetStorage.getVehicles(companyId)
     setReminders(allReminders)
-    setVehicles(fleetStorage.getVehicles(companyId))
+    setVehicles(allVehicles)
 
-    // Generate reminders based on vehicle dates
-    generateReminders()
+    // Generate reminders based on vehicle dates, then refresh from storage
+    generateReminders(allVehicles, allReminders, companyId)
+    const updated = fleetStorage.getServiceReminders(companyId)
+    setReminders(updated)
   }, [companyId])
 
-  const generateReminders = () => {
-    const allVehicles = fleetStorage.getVehicles(companyId)
+  const generateReminders = (allVehicles: Vehicle[], currentReminders: ServiceReminder[], cid: string) => {
     const now = new Date()
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
     allVehicles.forEach((vehicle) => {
       // Service reminder
       if (new Date(vehicle.nextServiceDate) <= thirtyDaysFromNow) {
-        const existingReminder = reminders.find(
+        const existingReminder = currentReminders.find(
           (r) => r.vehicleId === vehicle.id && r.reminderType === "service" && r.status === "pending",
         )
         if (!existingReminder) {
           const reminder: ServiceReminder = {
             id: `reminder-${Date.now()}-${vehicle.id}`,
-            companyId,
+            companyId: cid,
             vehicleId: vehicle.id,
             reminderType: "service",
             dueDate: vehicle.nextServiceDate,
@@ -50,13 +65,13 @@ export default function RemindersPage() {
 
       // Insurance expiry reminder
       if (new Date(vehicle.insuranceExpiryDate) <= thirtyDaysFromNow) {
-        const existingReminder = reminders.find(
+        const existingReminder = currentReminders.find(
           (r) => r.vehicleId === vehicle.id && r.reminderType === "insurance" && r.status === "pending",
         )
         if (!existingReminder) {
           const reminder: ServiceReminder = {
             id: `reminder-${Date.now()}-${vehicle.id}-ins`,
-            companyId,
+            companyId: cid,
             vehicleId: vehicle.id,
             reminderType: "insurance",
             dueDate: vehicle.insuranceExpiryDate,
@@ -69,13 +84,13 @@ export default function RemindersPage() {
 
       // Oil change reminder
       if (new Date(vehicle.nextOilChangeDate) <= thirtyDaysFromNow) {
-        const existingReminder = reminders.find(
+        const existingReminder = currentReminders.find(
           (r) => r.vehicleId === vehicle.id && r.reminderType === "oil-change" && r.status === "pending",
         )
         if (!existingReminder) {
           const reminder: ServiceReminder = {
             id: `reminder-${Date.now()}-${vehicle.id}-oil`,
-            companyId,
+            companyId: cid,
             vehicleId: vehicle.id,
             reminderType: "oil-change",
             dueDate: vehicle.nextOilChangeDate,

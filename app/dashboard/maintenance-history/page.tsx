@@ -15,6 +15,7 @@ import { Calendar, DollarSign, Wrench, FileText } from "lucide-react"
 export default function MaintenanceHistoryPage() {
   const [records, setRecords] = useState<MaintenanceRecord[]>([])
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [companyId, setCompanyId] = useState<string | null>(null)
   const [showAddRecord, setShowAddRecord] = useState(false)
   const [selectedVehicleId, setSelectedVehicleId] = useState("")
   const [filterVehicleId, setFilterVehicleId] = useState<string>("all")
@@ -26,16 +27,32 @@ export default function MaintenanceHistoryPage() {
     notes: "",
   })
 
-  const admin = JSON.parse(localStorage.getItem("fleet_admin") || "{}")
-  const companyId = admin.companyId
+  // Load companyId safely from localStorage
+  useEffect(() => {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (adminStr) {
+      try {
+        const admin = JSON.parse(adminStr)
+        if (admin?.companyId) setCompanyId(admin.companyId as string)
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, [])
 
   useEffect(() => {
+    if (!companyId) return
     setRecords(fleetStorage.getMaintenanceRecords(companyId))
     setVehicles(fleetStorage.getVehicles(companyId))
   }, [companyId])
 
   const handleAddRecord = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!companyId) {
+      alert("No company context available.")
+      return
+    }
 
     if (!selectedVehicleId) {
       alert("Please select a vehicle")

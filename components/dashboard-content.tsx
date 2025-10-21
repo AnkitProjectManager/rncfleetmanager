@@ -58,7 +58,6 @@ export function DashboardContent({ user }: { user: any }) {
   ]
 
   return (
-    <main className="flex-1 overflow-auto bg-slate-950">
     <main className="flex-1 overflow-auto" style={{ background: 'var(--color-background)' }}>
       <div className="p-6 space-y-6">
         {/* KPI Cards */}
@@ -74,7 +73,6 @@ export function DashboardContent({ user }: { user: any }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700">
           <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-[var(--card-foreground)]">Compliant Devices</CardTitle>
@@ -88,7 +86,6 @@ export function DashboardContent({ user }: { user: any }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700">
           <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-[var(--card-foreground)]">Vulnerabilities</CardTitle>
@@ -100,7 +97,6 @@ export function DashboardContent({ user }: { user: any }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700">
           <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-[var(--card-foreground)]">Open Incidents</CardTitle>
@@ -115,8 +111,7 @@ export function DashboardContent({ user }: { user: any }) {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-slate-800 border-slate-700">
-            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+          <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader>
                 <CardTitle className="text-[var(--card-foreground)]">Enrollment & Compliance Trend</CardTitle>
               <CardDescription className="text-slate-400">Weekly device status</CardDescription>
@@ -139,8 +134,7 @@ export function DashboardContent({ user }: { user: any }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700">
-            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+          <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader>
                 <CardTitle className="text-[var(--card-foreground)]">Devices by OS</CardTitle>
               <CardDescription className="text-slate-400">Operating system distribution</CardDescription>
@@ -180,8 +174,7 @@ export function DashboardContent({ user }: { user: any }) {
 
         {/* Device & Incident Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-slate-800 border-slate-700">
-            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+          <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader>
                 <CardTitle className="text-[var(--card-foreground)]">Recent Devices</CardTitle>
               <CardDescription className="text-slate-400">Latest enrolled devices</CardDescription>
@@ -216,9 +209,7 @@ export function DashboardContent({ user }: { user: any }) {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="bg-slate-800 border-slate-700">
-            <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+          <Card className="" style={{ background: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <CardHeader>
                 <CardTitle className="text-[var(--card-foreground)]">Recent Incidents</CardTitle>
               <CardDescription className="text-slate-400">Security incidents and alerts</CardDescription>
