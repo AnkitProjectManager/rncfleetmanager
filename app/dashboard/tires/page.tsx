@@ -1,4 +1,5 @@
 "use client"
+export const dynamic = 'force-dynamic'
 
 import type React from "react"
 
@@ -82,11 +83,21 @@ export default function TiresPage() {
   const [selectedTire, setSelectedTire] = useState<TireOption | null>(null)
   const [quantity, setQuantity] = useState(4)
   const [showOrderForm, setShowOrderForm] = useState(false)
+  const [companyId, setCompanyId] = useState<string>("")
 
-  const admin = JSON.parse(localStorage.getItem("fleet_admin") || "{}")
-  const companyId = admin.companyId
+  // Safely read from localStorage on the client
+  useEffect(() => {
+    const adminStr = localStorage.getItem("fleet_admin")
+    try {
+      const admin = adminStr ? JSON.parse(adminStr) : null
+      setCompanyId(admin?.companyId || "")
+    } catch {
+      setCompanyId("")
+    }
+  }, [])
 
   useEffect(() => {
+    if (!companyId) return
     setVehicles(fleetStorage.getVehicles(companyId))
   }, [companyId])
 
