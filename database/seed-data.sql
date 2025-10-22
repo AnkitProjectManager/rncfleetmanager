@@ -3,7 +3,10 @@
 
 USE rncfleets;
 
--- ============= INSERT COMPANIES =============
+-- Temporarily disable foreign key checks to avoid circular dependency issues
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ============= INSERT COMPANIES (without admin_id first) =============
 INSERT INTO companies (id, name, admin_id, subscription_tier, created_at) VALUES
 ('company-demo-1', 'TransLog Solutions', 'admin-demo-1', 'professional', DATE_SUB(NOW(), INTERVAL 180 DAY)),
 ('company-demo-2', 'Metro Delivery Services', 'admin-demo-2', 'enterprise', DATE_SUB(NOW(), INTERVAL 240 DAY)),
@@ -29,6 +32,9 @@ INSERT INTO admins (id, email, password, name, role, company_id, created_at) VAL
 ('admin-demo-8', 'admin@swiftmovers.com', 'admin123', 'Tom Brown', 'admin', 'company-demo-8', DATE_SUB(NOW(), INTERVAL 45 DAY)),
 ('admin-demo-9', 'admin@reliableroutes.com', 'admin123', 'Nina Patel', 'admin', 'company-demo-9', DATE_SUB(NOW(), INTERVAL 270 DAY)),
 ('admin-demo-10', 'admin@nextdaydelivery.com', 'admin123', 'Alex Thompson', 'admin', 'company-demo-10', DATE_SUB(NOW(), INTERVAL 100 DAY));
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============= INSERT VEHICLES (10 per company = 100 total) =============
 -- Company 1 vehicles
