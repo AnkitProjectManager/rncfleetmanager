@@ -25,18 +25,18 @@ export default function TeamPage() {
   const [newMember, setNewMember] = useState({ name: "", role: "user", email: "" })
 
   useEffect(() => {
-    const userData = localStorage.getItem("fleet_user")
-    if (!userData) {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (!adminStr) {
       router.push("/")
       return
     }
-    const parsedUser = JSON.parse(userData)
-    setUser(parsedUser)
+    const admin = JSON.parse(adminStr)
+    setUser(admin)
 
-    // Load team members from localStorage
+    // Load team members from localStorage scoped by companyId
     const users = JSON.parse(localStorage.getItem("fleet_users") || "[]")
-    const orgUsers = users.filter((u: any) => u.orgId === parsedUser.orgId)
-    setTeam(orgUsers)
+    const companyUsers = users.filter((u: any) => u.companyId === admin.companyId)
+    setTeam(companyUsers)
   }, [router])
 
   const handleAddMember = () => {
@@ -47,7 +47,7 @@ export default function TeamPage() {
       id: `user-${Date.now()}`,
       email: newMember.email,
       password: "temp-password-123",
-      orgId: user.orgId,
+      companyId: user.companyId,
       role: newMember.role,
       name: newMember.name,
       createdAt: new Date().toISOString(),

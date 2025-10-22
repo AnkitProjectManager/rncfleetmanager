@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertCircle, Key, Lock, Bell } from "lucide-react"
+import { fleetStorage } from "@/lib/fleet-storage"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -23,50 +24,58 @@ export default function SettingsPage() {
   const [ssoEnabled, setSsoEnabled] = useState(false)
 
   useEffect(() => {
-    const userData = localStorage.getItem("fleet_user")
-    if (!userData) {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (!adminStr) {
       router.push("/")
       return
     }
-    const parsedUser = JSON.parse(userData)
-    setUser(parsedUser)
-    setEmail(parsedUser.email)
+    const admin = JSON.parse(adminStr)
+    setUser(admin)
+    setEmail(admin.email)
 
-    const orgs = JSON.parse(localStorage.getItem("fleet_orgs") || "[]")
-    const userOrg = orgs.find((o: any) => o.id === parsedUser.orgId)
-    if (userOrg) {
-      setOrg(userOrg)
-      setOrgName(userOrg.name)
-    }
-
-    // Generate API key if not exists
-    const storedApiKey = localStorage.getItem(`fleet_api_key_${parsedUser.orgId}`)
-    if (storedApiKey) {
-      setApiKey(storedApiKey)
-    } else {
-      const newApiKey = `fleet_${Math.random().toString(36).substr(2, 32)}`
-      localStorage.setItem(`fleet_api_key_${parsedUser.orgId}`, newApiKey)
-      setApiKey(newApiKey)
+    // Resolve company/org from admin.companyId (superadmin may not have one)
+    if (admin.companyId) {
+      const company = fleetStorage.getCompanyById(admin.companyId)
+      if (company) {
+        setOrg(company)
+        setOrgName(company.name)
+      }
+      // API key scoped to company
+      const storedApiKey = localStorage.getItem(`fleet_api_key_${admin.companyId}`)
+      if (storedApiKey) {
+        setApiKey(storedApiKey)
+      } else {
+        const newApiKey = `fleet_${Math.random().toString(36).substr(2, 32)}`
+        localStorage.setItem(`fleet_api_key_${admin.companyId}`, newApiKey)
+        setApiKey(newApiKey)
+      }
     }
   }, [router])
 
   const handleSaveOrgSettings = () => {
-    const orgs = JSON.parse(localStorage.getItem("fleet_orgs") || "[]")
-    const index = orgs.findIndex((o: any) => o.id === user.orgId)
-    if (index !== -1) {
-      orgs[index].name = orgName
-      orgs[index].settings = {
-        mfaRequired: mfaEnabled,
-        ssoEnabled: ssoEnabled,
+    if (!user?.companyId) return
+    const companies = fleetStorage.getCompanies()
+    const idx = companies.findIndex((c) => c.id === user.companyId)
+    if (idx !== -1) {
+      companies[idx] = {
+        ...companies[idx],
+        name: orgName || companies[idx].name,
+        // persist a simple settings object alongside company for demo purposes
+        // @ts-ignore - Company type may not include settings; this is demo state only
+        settings: { mfaRequired: mfaEnabled, ssoEnabled },
       }
-      localStorage.setItem("fleet_orgs", JSON.stringify(orgs))
-      setOrg(orgs[index])
+      // direct write since no update API exists
+      if (typeof window !== "undefined") {
+        localStorage.setItem("fleet_companies", JSON.stringify(companies))
+      }
+      setOrg(companies[idx])
     }
   }
 
   const handleGenerateNewApiKey = () => {
+    if (!user?.companyId) return
     const newApiKey = `fleet_${Math.random().toString(36).substr(2, 32)}`
-    localStorage.setItem(`fleet_api_key_${user.orgId}`, newApiKey)
+    localStorage.setItem(`fleet_api_key_${user.companyId}`, newApiKey)
     setApiKey(newApiKey)
   }
 

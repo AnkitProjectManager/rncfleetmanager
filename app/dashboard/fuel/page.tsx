@@ -45,12 +45,12 @@ export default function FuelPage() {
   const [newRecord, setNewRecord] = useState({ vehicle: "", gallons: "", cost: "", odometer: "" })
 
   useEffect(() => {
-    const userData = localStorage.getItem("fleetio_user")
-    if (!userData) {
+    const adminStr = typeof window !== "undefined" ? localStorage.getItem("fleet_admin") : null
+    if (!adminStr) {
       router.push("/")
       return
     }
-    setUser(JSON.parse(userData))
+    setUser(JSON.parse(adminStr))
   }, [router])
 
   const handleAddRecord = () => {
