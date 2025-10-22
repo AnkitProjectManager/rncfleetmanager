@@ -9,7 +9,7 @@ interface Config {
   orgId: string
 }
 
-const configPath = path.join(process.env.HOME || "", ".rncfleets", "config.json")
+const configPath = path.join(process.env.HOME || "", ".fleetdb", "config.json")
 
 function loadConfig(): Config | null {
   try {
@@ -33,7 +33,7 @@ function saveConfig(config: Config) {
 async function apiCall(endpoint: string, method = "GET", body?: any) {
   const config = loadConfig()
   if (!config) {
-  console.error("Not authenticated. Run 'rncfleetsctl login' first.")
+  console.error("Not authenticated. Run 'fleetdbctl login' first.")
     process.exit(1)
   }
 
@@ -65,14 +65,14 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
     const password = args[1]
 
     if (!email || !password) {
-      console.error("Usage: rncfleetsctl login <email> <password>")
+      console.error("Usage: fleetdbctl login <email> <password>")
       process.exit(1)
     }
 
     console.log("Logging in...")
     // In production, call actual login endpoint
     const config: Config = {
-      apiKey: `rncfleets_${Math.random().toString(36).substr(2, 32)}`,
+      apiKey: `fleetdb_${Math.random().toString(36).substr(2, 32)}`,
       baseUrl: "http://localhost:3000/api",
       orgId: `org-${Date.now()}`,
     }
@@ -102,7 +102,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
     const osVersion = args[2]
 
     if (!hostname || !osType || !osVersion) {
-      console.error("Usage: rncfleetsctl devices:enroll <hostname> <osType> <osVersion>")
+      console.error("Usage: fleetdbctl devices:enroll <hostname> <osType> <osVersion>")
       process.exit(1)
     }
 
@@ -134,7 +134,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   "query:execute": async (args) => {
     const query = args.join(" ")
     if (!query) {
-      console.error("Usage: rncfleetsctl query:execute <query>")
+      console.error("Usage: fleetdbctl query:execute <query>")
       process.exit(1)
     }
 
@@ -154,13 +154,13 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
 
   help: async () => {
     console.log(`
-RNCFleets CLI - Endpoint Management Tool
+FleetDB CLI - Endpoint Management Tool
 
-Usage: rncfleetsctl <command> [options]
+Usage: fleetdbctl <command> [options]
 
 Commands:
-  login <email> <password>           Login to RNCFleets
-  logout                             Logout from RNCFleets
+  login <email> <password>           Login to FleetDB
+  logout                             Logout from FleetDB
   
   devices:list                       List all devices
   devices:enroll <hostname> <os> <version>  Enroll a new device
@@ -187,7 +187,7 @@ async function main() {
     await commands[command](commandArgs)
   } else {
     console.error(`Unknown command: ${command}`)
-    console.log("Run 'rncfleetsctl help' for usage information")
+    console.log("Run 'fleetdbctl help' for usage information")
     process.exit(1)
   }
 }

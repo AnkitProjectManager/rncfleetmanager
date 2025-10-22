@@ -12,7 +12,7 @@
 
 \`\`\`bash
 git clone https://github.com/yourusername/rncfleets.git
-cd rncfleets
+cd fleetdb
 npm install
 \`\`\`
 
@@ -26,7 +26,7 @@ Open http://localhost:3000 in your browser.
 
 ### 3. Demo Credentials
 
-- Email: `demo@rncfleets.com`
+- Email: `demo@fleetdb.com`
 - Password: `demo123`
 
 ## Production Deployment
@@ -66,8 +66,8 @@ CMD ["npm", "start"]
 Build and run:
 
 \`\`\`bash
-docker build -t rncfleets:latest .
-docker run -p 3000:3000 rncfleets:latest
+docker build -t fleetdb:latest .
+docker run -p 3000:3000 fleetdb:latest
 \`\`\`
 
 ### Option 3: Traditional Server
@@ -76,15 +76,15 @@ docker run -p 3000:3000 rncfleets:latest
 2. Clone the repository
 3. Install dependencies: `npm install`
 4. Build: `npm run build`
-5. Start with PM2: `pm2 start npm --name rncfleets -- start`
+5. Start with PM2: `pm2 start npm --name fleetdb -- start`
 
 ## Environment Variables
 
 Create a `.env.local` file:
 
 \`\`\`env
-NEXT_PUBLIC_API_URL=https://api.rncfleets.local
-DATABASE_URL=postgresql://user:password@localhost:5432/rncfleets
+NEXT_PUBLIC_API_URL=https://api.fleetdb.local
+DATABASE_URL=postgresql://user:password@localhost:5432/fleetdb
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-secret-key
 \`\`\`
@@ -94,9 +94,9 @@ JWT_SECRET=your-secret-key
 ### PostgreSQL
 
 \`\`\`sql
-CREATE DATABASE rncfleets;
-CREATE USER rncfleets_user WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE rncfleets TO rncfleets_user;
+CREATE DATABASE fleetdb;
+CREATE USER fleetdb_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE fleetdb TO fleetdb_user;
 \`\`\`
 
 ### Run Migrations
@@ -111,7 +111,7 @@ npm run migrate
 
 \`\`\`bash
 
-sudo certbot certonly --standalone -d rncfleets.yourdomain.com
+sudo certbot certonly --standalone -d fleetdb.yourdomain.com
 \`\`\`
 
 Configure Nginx:
@@ -119,10 +119,10 @@ Configure Nginx:
 \`\`\`nginx
 server {
     listen 443 ssl http2;
-    server_name rncfleets.yourdomain.com;
+    server_name fleetdb.yourdomain.com;
 
-    ssl_certificate /etc/letsencrypt/live/rncfleets.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/rncfleets.yourdomain.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/fleetdb.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fleetdb.yourdomain.com/privkey.pem;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -141,7 +141,7 @@ server {
 
 \`\`\`bash
 npm install pm2 -g
-pm2 start npm --name rncfleets -- start
+pm2 start npm --name fleetdb -- start
 pm2 monit
 \`\`\`
 
@@ -155,14 +155,14 @@ Configure logging to external service (Datadog, New Relic, etc.)
 
 \`\`\`bash
 # Daily backup
-0 2 * * * pg_dump rncfleets > /backups/rncfleets-$(date +\%Y\%m\%d).sql
+0 2 * * * pg_dump fleetdb > /backups/fleetdb-$(date +\%Y\%m\%d).sql
 \`\`\`
 
 ### Configuration Backups
 
 \`\`\`bash
 # Backup configuration files
-tar -czf /backups/rncfleets-config-$(date +\%Y\%m\%d).tar.gz /app/config/
+tar -czf /backups/fleetdb-config-$(date +\%Y\%m\%d).tar.gz /app/config/
 \`\`\`
 
 ## Security Hardening
