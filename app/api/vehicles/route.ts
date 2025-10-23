@@ -1,126 +1,68 @@
-/**
- * Vehicles API Route
- * 
- * GET /api/vehicles - Fetch all vehicles (optionally filter by company_id)
- * POST /api/vehicles - Create a new vehicle
- */
-
-import { NextRequest, NextResponse } from 'next/server'
-import pool from '@/lib/db'
-import type { ResultSetHeader, RowDataPacket } from 'mysql2'
+import { NextRequest } from 'next/server'
+import { db } from '@/lib/db-helpers'
+import { apiResponse } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-// GET /api/vehicles?company_id=xxx
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get('company_id')
-
-    let query = `
-      SELECT 
-        id, company_id, make, model, year, vin, license_plate, 
-        odometer, odometer_unit, obd_connected, obd_device_id,
-        insurance_expiry_date, registration_expiry_date, 
-        next_service_date, next_tire_change_km, next_oil_change_date,
-        status, created_at, updated_at
-      FROM vehicles
-    `
-    const params: any[] = []
-
-    if (companyId) {
-      query += ' WHERE company_id = ?'
-      params.push(companyId)
-    }
-
-    query += ' ORDER BY created_at DESC LIMIT 500'
-
-    const [rows] = await pool.query<RowDataPacket[]>(query, params)
-
-    return NextResponse.json({ 
-      ok: true, 
-      data: rows,
-      count: rows.length 
-    })
-  } catch (err: any) {
-    console.error('GET /api/vehicles error:', err)
-    return NextResponse.json(
-      { ok: false, error: err.message }, 
-      { status: 500 }
+    const companyId = request.nextUrl.searchParams.get('company_id')
+    
+    const vehicles = await db.query(
+      `SELECT * FROM vehicles ${companyId ? 'WHERE company_id = ?' : ''} 
+       ORDER BY created_at DESC LIMIT 500`,
+      companyId ? [companyId] : []
     )
+
+    return apiResponse.success(vehicles, { count: vehicles.length })
+  } catch (err: any) {
+    console.error('GET /api/vehicles:', err)
+    return apiResponse.error(err.message)
   }
 }
 
-// POST /api/vehicles
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      company_id,
-      make,
-      model,
-      year,
-      vin,
-      license_plate,
-      odometer = 0,
-      odometer_unit = 'km',
-      obd_connected = false,
-      obd_device_id,
-      insurance_expiry_date,
-      registration_expiry_date,
-      next_service_date,
-      next_tire_change_km,
-      next_oil_change_date,
-      status = 'active',
-    } = body
+    const { company_id, make, model, year, license_plate } = body
 
-    // Validate required fields
     if (!company_id || !make || !model || !year || !license_plate) {
-      return NextResponse.json(
-        { ok: false, error: 'Missing required fields: company_id, make, model, year, license_plate' },
-        { status: 400 }
-      )
+      return apiResponse.badRequest('Missing required fields: company_id, make, model, year, license_plate')
     }
 
-    const [result] = await pool.query<ResultSetHeader>(
+    const id = db.generateId('vehicle')
+    
+    await db.insert(
       `INSERT INTO vehicles (
         id, company_id, make, model, year, vin, license_plate,
         odometer, odometer_unit, obd_connected, obd_device_id,
         insurance_expiry_date, registration_expiry_date,
-        next_service_date, next_tire_change_km, next_oil_change_date,
-        status
+        next_service_date, next_tire_change_km, next_oil_change_date, status
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        `vehicle-${Date.now()}`,
+        id,
         company_id,
         make,
         model,
         year,
-        vin,
+        body.vin || null,
         license_plate,
-        odometer,
-        odometer_unit,
-        obd_connected,
-        obd_device_id,
-        insurance_expiry_date,
-        registration_expiry_date,
-        next_service_date,
-        next_tire_change_km,
-        next_oil_change_date,
-        status,
+        body.odometer || 0,
+        body.odometer_unit || 'km',
+        body.obd_connected || false,
+        body.obd_device_id || null,
+        body.insurance_expiry_date || null,
+        body.registration_expiry_date || null,
+        body.next_service_date || null,
+        body.next_tire_change_km || null,
+        body.next_oil_change_date || null,
+        body.status || 'active',
       ]
     )
 
-    return NextResponse.json({ 
-      ok: true, 
-      id: result.insertId,
-      message: 'Vehicle created successfully' 
-    })
+    return apiResponse.success({ id, message: 'Vehicle created' })
   } catch (err: any) {
-    console.error('POST /api/vehicles error:', err)
-    return NextResponse.json(
-      { ok: false, error: err.message }, 
-      { status: 500 }
-    )
+    console.error('POST /api/vehicles:', err)
+    return apiResponse.error(err.message)
   }
 }

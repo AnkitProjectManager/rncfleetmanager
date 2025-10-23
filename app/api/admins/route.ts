@@ -1,97 +1,48 @@
-/**
- * Admins API Route
- * 
- * GET /api/admins - Fetch all admins (optionally filter by company_id)
- * POST /api/admins - Create a new admin
- */
-
-import { NextRequest, NextResponse } from 'next/server'
-import pool from '@/lib/db'
-import type { ResultSetHeader, RowDataPacket } from 'mysql2'
+import { NextRequest } from 'next/server'
+import { db } from '@/lib/db-helpers'
+import { apiResponse } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-// GET /api/admins?company_id=xxx
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get('company_id')
-
-    let query = `
-      SELECT 
-        id, email, name, role, company_id, created_at, updated_at
-      FROM admins
-    `
-    const params: any[] = []
-
-    if (companyId) {
-      query += ' WHERE company_id = ?'
-      params.push(companyId)
-    }
-
-    query += ' ORDER BY created_at DESC'
-
-    const [rows] = await pool.query<RowDataPacket[]>(query, params)
-
-    return NextResponse.json({ 
-      ok: true, 
-      data: rows,
-      count: rows.length 
-    })
-  } catch (err: any) {
-    console.error('GET /api/admins error:', err)
-    return NextResponse.json(
-      { ok: false, error: err.message }, 
-      { status: 500 }
+    const companyId = request.nextUrl.searchParams.get('company_id')
+    
+    const admins = await db.query(
+      `SELECT id, email, name, role, company_id, created_at, updated_at 
+       FROM admins ${companyId ? 'WHERE company_id = ?' : ''} 
+       ORDER BY created_at DESC`,
+      companyId ? [companyId] : []
     )
+
+    return apiResponse.success(admins, { count: admins.length })
+  } catch (err: any) {
+    console.error('GET /api/admins:', err)
+    return apiResponse.error(err.message)
   }
 }
 
-// POST /api/admins
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { 
-      email, 
-      password, 
-      name, 
-      role = 'admin', 
-      company_id 
-    } = body
+    const { email, password, name, role = 'admin', company_id } = await request.json()
 
     if (!email || !password || !name) {
-      return NextResponse.json(
-        { ok: false, error: 'Missing required fields: email, password, name' },
-        { status: 400 }
-      )
+      return apiResponse.badRequest('Missing required fields: email, password, name')
     }
 
-    // In production, hash the password before storing!
+    // TODO: Hash password in production using bcrypt
     // const hashedPassword = await bcrypt.hash(password, 10)
 
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO admins (id, email, password, name, role, company_id) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        `admin-${Date.now()}`,
-        email,
-        password, // TODO: Hash this in production!
-        name,
-        role,
-        company_id
-      ]
+    const id = db.generateId('admin')
+    
+    await db.insert(
+      'INSERT INTO admins (id, email, password, name, role, company_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, email, password, name, role, company_id]
     )
 
-    return NextResponse.json({ 
-      ok: true, 
-      id: result.insertId,
-      message: 'Admin created successfully' 
-    })
+    return apiResponse.success({ id, message: 'Admin created' })
   } catch (err: any) {
-    console.error('POST /api/admins error:', err)
-    return NextResponse.json(
-      { ok: false, error: err.message }, 
-      { status: 500 }
-    )
+    console.error('POST /api/admins:', err)
+    return apiResponse.error(err.message)
   }
 }
